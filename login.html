@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Vision - تسجيل الدخول</title>
+    <link rel="stylesheet" href="../CSS/login.css">
+   
+</head>
+<body>
+    <div class="notification" id="notification"></div>
+
+    <div class="login-container">
+        <div class="logo">
+            <div style="display: flex; align-items: center; gap: 15px; justify-content: center; margin-bottom: 10px;">
+                <img src="../logo.png" alt="Data Vision Logo" style="width: 140px; height: 140px;">
+                <h1 style="margin: 0;">Data Vision</h1>
+            </div>
+            <p>نظام إدارة العملاء والمبيعات</p>
+        </div>
+
+        <!-- نموذج تسجيل الدخول -->
+        <div id="loginForm" class="form-container">
+            <form id="loginFormElement" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label for="loginEmail">البريد الإلكتروني</label>
+                    <input type="email" id="loginEmail" required placeholder="example@email.com">
+                </div>
+
+                <div class="form-group">
+                    <label for="loginPassword">كلمة المرور</label>
+                    <div class="password-input-container">
+                        <input type="password" id="loginPassword" required placeholder="أدخل كلمة المرور" class="password-field">
+                        <button type="button" class="toggle-password" onclick="togglePasswordVisibility('loginPassword', this)">
+                            👁️
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">تسجيل الدخول</button>
+            </form>
+
+            <div class="form-footer">
+                <p>ليس لديك حساب؟</p>
+                <button class="switch-form" onclick="showSignupForm()">إنشاء حساب جديد</button>
+            </div>
+        </div>
+
+        <!-- نموذج إنشاء حساب -->
+        <div id="signupForm" class="form-container" style="display: none;">
+            <form id="signupFormElement" onsubmit="handleSignup(event)">
+                <div class="form-group">
+                    <label for="signupName">الاسم الكامل</label>
+                    <input type="text" id="signupName" required placeholder="أدخل اسمك الكامل">
+                </div>
+
+                <div class="form-group">
+                    <label for="signupEmail">البريد الإلكتروني</label>
+                    <input type="email" id="signupEmail" required placeholder="example@email.com">
+                </div>
+
+                <div class="form-group">
+                    <label for="signupPassword">كلمة المرور</label>
+                    <div class="password-input-container">
+                        <input type="password" id="signupPassword" required placeholder="أنشئ كلمة مرور قوية" 
+                               class="password-field" 
+                               onkeyup="checkPasswordStrength(this.value)"
+                               onfocus="showPasswordHints()"
+                               onblur="hidePasswordHints()">
+                        <button type="button" class="toggle-password" onclick="togglePasswordVisibility('signupPassword', this)">
+                            👁️
+                        </button>
+                    </div>
+                    
+                    <div class="password-strength-meter">
+                        <div class="strength-bar">
+                            <div class="strength-fill" id="strengthFill"></div>
+                        </div>
+                        <div class="strength-text" id="strengthText">لم يتم إدخال كلمة مرور</div>
+                        <div class="strength-level" id="strengthLevel" style="display: none;"></div>
+                    </div>
+
+                    <div class="password-hints" id="passwordHints">
+                        <h4>نصائح لتحسين كلمة المرور:</h4>
+                        <ul class="hint-list">
+                            <li class="hint-item" id="lengthHint">8 أحرف على الأقل</li>
+                            <li class="hint-item" id="numberHint">تحتوي على أرقام</li>
+                            <li class="hint-item" id="upperHint">تحتوي على حروف كبيرة</li>
+                            <li class="hint-item" id="lowerHint">تحتوي على حروف صغيرة</li>
+                            <li class="hint-item" id="specialHint">تحتوي على رموز خاصة</li>
+                        </ul>
+                    </div>
+
+                    <div class="advanced-strength" id="advancedStrength">
+                        <div class="strength-criteria">
+                            <div class="criteria-indicator" id="lengthCriteria"></div>
+                            <span>الطول (8 أحرف)</span>
+                        </div>
+                        <div class="strength-criteria">
+                            <div class="criteria-indicator" id="numberCriteria"></div>
+                            <span>أرقام</span>
+                        </div>
+                        <div class="strength-criteria">
+                            <div class="criteria-indicator" id="upperCriteria"></div>
+                            <span>حروف كبيرة</span>
+                        </div>
+                        <div class="strength-criteria">
+                            <div class="criteria-indicator" id="specialCriteria"></div>
+                            <span>رموز خاصة</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="confirmPassword">تأكيد كلمة المرور</label>
+                    <div class="password-input-container">
+                        <input type="password" id="confirmPassword" required placeholder="أعد إدخال كلمة المرور" class="password-field">
+                        <button type="button" class="toggle-password" onclick="togglePasswordVisibility('confirmPassword', this)">
+                            👁️
+                        </button>
+                    </div>
+                </div>
+
+                <div class="terms">
+                    <input type="checkbox" id="agreeTerms" required>
+                    <label for="agreeTerms">أوافق على <a href="#">شروط الخدمة</a> و <a href="#">سياسة الخصوصية</a></label>
+                </div>
+
+                <button type="submit" class="btn btn-primary">إنشاء حساب</button>
+            </form>
+
+            <div class="form-footer">
+                <p>لديك حساب بالفعل؟</p>
+                <button class="switch-form" onclick="showLoginForm()">تسجيل الدخول</button>
+            </div>
+        </div>
+    </div>
+
+       <script src="../JS/login.js"></script>
+
+</body>
+</html>

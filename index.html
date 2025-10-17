@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Vision - نظام إدارة العملاء والمبيعات</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="../JS/Basic data configuration and management.JS"></script>
+    <script src="../JS/Customer and sales management.JS"></script>
+    <script src="../JS/Smart Assistant and Additional Functions.JS"></script>
+    <link rel="stylesheet" href="../CSS/indx.css">
+  
+</head>
+<body>
+    <div class="notification" id="notification"></div>
+
+    <div class="container">
+        <div class="header">
+            <div style="display: flex; align-items: center; gap: 20px; justify-content: center; margin-bottom: 10px;">
+                <img src="../logo.png" alt="Data Vision Logo" style="width: 100px; height: 100px;">
+                <h1 style="margin: 0;">Data Vision</h1>
+            </div>
+            <div class="nav-tabs">
+                <button class="tab-btn active" onclick="switchTab('dashboard')">📊 لوحة التحكم</button>
+                <button class="tab-btn" onclick="switchTab('customers')">👥 العملاء</button>
+                <button class="tab-btn" onclick="switchTab('sales')">💰 المبيعات</button>
+                <button class="tab-btn" onclick="switchTab('whatsapp')">📱 واتساب</button>
+                <button class="tab-btn" onclick="switchTab('assistant')">🤖 المساعد الذكي</button>
+                <button class="tab-btn" onclick="switchTab('settings')">⚙️ الإعدادات</button>
+                <button class="btn" onclick="resetActivation()">🔑 الترخيص </button>
+            </div>
+        </div>
+
+        <div class="content">
+            <!-- قسم لوحة التحكم -->
+            <div id="dashboard" class="tab-content active">
+                <h2 class="page-title-black">لوحة التحكم</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>إجمالي العملاء</h3>
+                        <div class="value" id="totalCustomers">0</div>
+                    </div>
+                    <div class="stat-card success">
+                        <h3>العملاء النشطين</h3>
+                        <div class="value" id="activeCustomers">0</div>
+                    </div>
+                    <div class="stat-card warning">
+                        <h3>العملاء غير النشطين</h3>
+                        <div class="value" id="inactiveCustomers">0</div>
+                    </div>
+                    <div class="stat-card info">
+                        <h3>إجمالي المبيعات</h3>
+                        <div class="value" id="totalSales">0 دينار</div>
+                    </div>
+                </div>
+
+                <div class="charts-container">
+                    <div class="chart-box">
+                        <h3>توزيع حالة العملاء</h3>
+                        <canvas id="statusChart"></canvas>
+                    </div>
+                    <div class="chart-box">
+                        <h3>مبيعات آخر 7 أيام</h3>
+                        <canvas id="salesChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- قسم العملاء -->
+            <div id="customers" class="tab-content">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
+                    <h2 class="page-title-black">إدارة العملاء</h2>
+                    <button class="btn btn-primary" onclick="openAddCustomerModal()">➕ إضافة عميل جديد</button>
+                </div>
+
+                <div class="search-box">
+                    <input type="text" id="customerSearch" placeholder="🔍 ابحث عن عميل..." onkeyup="filterCustomers()">
+                </div>
+
+                <div class="customers-grid" id="customersList">
+                    <!-- سيتم عرض العملاء هنا -->
+                </div>
+            </div>
+
+            <!-- قسم المبيعات -->
+            <div id="sales" class="tab-content">
+                <h2 class="page-title-black">سجل المبيعات</h2>
+                
+                <!-- إضافة الفلاتر -->
+                <div style="margin-bottom: 20px;">
+                    <label for="startDate">من:</label>
+                    <input type="date" id="startDate">
+                    <label for="endDate">إلى:</label>
+                    <input type="date" id="endDate">
+                    <button onclick="filterSales()">تصفية المبيعات</button>
+                </div>
+
+                <!-- عرض المبيعات -->
+                <div class="sales-list" id="salesList">
+                    <!-- سيتم عرض المبيعات هنا -->
+                </div>
+            </div>
+
+            <!-- قسم واتساب -->
+            <div id="whatsapp" class="tab-content">
+                <h2 class="page-title-black">إدارة رسائل واتساب</h2>
+                
+                <div class="settings-section">
+                    <h3>إرسال رسالة جماعية</h3>
+                    <div class="form-group">
+                        <label>نص الرسالة</label>
+                        <textarea id="bulkMessage" rows="5" placeholder="مرحباً {name}، نحن سعداء بخدمتك..."></textarea>
+                        <small style="color: #6b7280;">استخدم {name} لإدراج اسم العميل تلقائياً</small>
+                    </div>
+                    <button class="btn btn-whatsapp" onclick="sendBulkWhatsApp()">📤 إرسال للجميع</button>
+                </div>
+
+                <div class="settings-section">
+                    <h3>رسائل تلقائية للعملاء غير النشطين</h3>
+                    <div class="form-group">
+                        <label>نص الرسالة</label>
+                        <textarea id="inactiveMessage" rows="4" placeholder="مرحباً {name}، نفتقدك! هل تحتاج مساعدة؟"></textarea>
+                    </div>
+                    <button class="btn btn-success" onclick="sendToInactive()">📨 إرسال للعملاء غير النشطين</button>
+                </div>
+            </div>
+
+            <!-- قسم المساعد الذكي -->
+            <div id="assistant" class="tab-content">
+                <h2 class="page-title-black">المساعد الذكي</h2>
+                
+                <div class="settings-section">
+                    <h3>محادثة مع المساعد</h3>
+                    <div class="chat-container" id="chatContainer">
+                        <div class="chat-message ai-message">
+                            <div class="message-avatar">🤖</div>
+                            <div class="message-content">
+                                <div class="message-text">مرحباً! أنا المساعد الذكي لـ Data Vision. كيف يمكنني مساعدتك اليوم؟ يمكنني تقديم تحليلات حول بياناتك، اقتراحات لتحسين المبيعات، ومساعدتك في إدارة العملاء.</div>
+                                <div class="message-time" id="messageTime"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="chat-input-container">
+                        <div class="quick-actions">
+                            <button class="quick-btn" onclick="askAssistant('تحليل أداء المبيعات')">📈 تحليل المبيعات</button>
+                            <button class="quick-btn" onclick="askAssistant('نصائح للعملاء غير النشطين')">👥 نصائح للعملاء</button>
+                            <button class="quick-btn" onclick="askAssistant('اقتراحات لتحسين الأداء')">💡 اقتراحات تحسين</button>
+                            <button class="quick-btn" onclick="askAssistant('تقرير شامل عن الأداء')">📊 تقرير شامل</button>
+                        </div>
+                        
+                        <div class="form-group" style="margin-top: 15px;">
+                            <div style="display: flex; gap: 10px;">
+                                <input type="text" id="assistantInput" placeholder="اكتب سؤالك هنا..." style="flex: 1;" onkeypress="handleKeyPress(event)">
+                                <button class="btn btn-primary" onclick="sendMessage()">إرسال</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h3>تحليلات ذكية</h3>
+                    <div class="ai-insights" id="aiInsights">
+                    </div>
+                </div>
+            </div>
+
+            <!-- قسم الإعدادات -->
+            <div id="settings" class="tab-content">
+                <h2 class="page-title-black">الإعدادات</h2>
+                
+                <!-- قسم استيراد وتصدير البيانات -->
+                <div class="settings-section">
+                    <h3>📁 استيراد وتصدير البيانات</h3>
+                    <div class="button-group" style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <button onclick="openExportModal()" class="btn btn-primary">📤 تصدير البيانات</button>
+                        <button onclick="openImportModal()" class="btn btn-secondary">📥 استيراد البيانات</button>
+                    </div>
+                </div>
+
+                <!-- قسم إدارة البيانات الأساسية -->
+                <div class="settings-section">
+                    <h3>🛠️ إدارة البيانات الأساسية</h3>
+                    <div class="button-group" style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <button class="btn btn-success" onclick="exportData()">📄 تصدير JSON</button>
+                        <button class="btn btn-warning" onclick="document.getElementById('importJsonFile').click()">
+                            📄 استيراد JSON
+                        </button>
+                        <input type="file" id="importJsonFile" accept=".json" style="display: none;" onchange="importData(event)">
+                        <button class="btn btn-danger" onclick="clearAllData()">🗑️ مسح جميع البيانات</button>
+                    </div>
+                </div>
+
+                <!-- قسم قالب الرسائل -->
+                <div class="settings-section">
+                    <h3>✉️ قالب الرسائل الافتراضي</h3>
+                    <div class="form-group">
+                        <label>رسالة افتراضية</label>
+                        <textarea id="defaultMessage" rows="5" placeholder="مرحباً {name}، شكراً لاختيارك Data Vision!"></textarea>
+                    </div>
+                    <button class="btn btn-primary" onclick="saveDefaultMessage()">💾 حفظ القالب</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة تصدير البيانات -->
+    <div id="exportModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>📤 اختر صيغة التصدير</h3>
+                <button class="close-btn" onclick="closeModal('exportModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="export-options" style="display: flex; flex-direction: column; gap: 10px; margin: 20px 0;">
+                    <button onclick="exportData()" class="btn btn-primary" style="text-align: right; padding: 15px;">
+                        <div style="font-size: 16px; font-weight: bold;">📄 JSON</div>
+                        <div style="font-size: 12px; opacity: 0.8;">نسخة احتياطية كاملة مع جميع البيانات</div>
+                    </button>
+                    <button onclick="exportToExcel()" class="btn btn-success" style="text-align: right; padding: 15px;">
+                        <div style="font-size: 16px; font-weight: bold;">📊 Excel</div>
+                        <div style="font-size: 12px; opacity: 0.8;">ملف Excel متعدد الأوراق (عملاء، مبيعات، إحصائيات)</div>
+                    </button>
+                    <button onclick="exportToCSV()" class="btn btn-info" style="text-align: right; padding: 15px;">
+                        <div style="font-size: 16px; font-weight: bold;">📝 CSV</div>
+                        <div style="font-size: 12px; opacity: 0.8;">ملف نصي بسيط للعملاء والمبيعات</div>
+                    </button>
+                </div>
+                <button onclick="closeModal('exportModal')" class="btn btn-danger" style="width: 100%;">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة استيراد البيانات -->
+    <div id="importModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>📥 اختر صيغة الاستيراد</h3>
+                <button class="close-btn" onclick="closeModal('importModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <!-- ملفات الإدخال المخفية -->
+                <input type="file" id="importJson" accept=".json" onchange="importData(event)" style="display: none;">
+                <input type="file" id="importExcel" accept=".xlsx,.xls" onchange="importFromExcel(event)" style="display: none;">
+                <input type="file" id="importCsv" accept=".csv" onchange="importFromCSV(event)" style="display: none;">
+                
+                <div class="import-options" style="display: flex; flex-direction: column; gap: 10px; margin: 20px 0;">
+                    <button onclick="document.getElementById('importJson').click()" class="btn btn-primary" style="text-align: right; padding: 15px;">
+                        <div style="font-size: 16px; font-weight: bold;">📄 JSON</div>
+                        <div style="font-size: 12px; opacity: 0.8;">استيراد نسخة احتياطية سابقة</div>
+                    </button>
+                    <button onclick="document.getElementById('importExcel').click()" class="btn btn-success" style="text-align: right; padding: 15px;">
+                        <div style="font-size: 16px; font-weight: bold;">📊 Excel</div>
+                        <div style="font-size: 12px; opacity: 0.8;">استيراد من ملف Excel</div>
+                    </button>
+                    <button onclick="document.getElementById('importCsv').click()" class="btn btn-info" style="text-align: right; padding: 15px;">
+                        <div style="font-size: 16px; font-weight: bold;">📝 CSV</div>
+                        <div style="font-size: 12px; opacity: 0.8;">استيراد من ملف CSV</div>
+                    </button>
+                </div>
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                    <h4 style="margin: 0 0 10px 0; color: #333;">💡 ملاحظة مهمة:</h4>
+                    <p style="margin: 0; font-size: 14px; color: #666;">
+                        الاستيراد سيقوم <strong>بإضافة</strong> البيانات الجديدة إلى البيانات الحالية. 
+                        لاستبدال جميع البيانات، قم بمسح البيانات أولاً ثم استورد الملف الجديد.
+                    </p>
+                </div>
+                <button onclick="closeModal('importModal')" class="btn btn-danger" style="width: 100%;">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة إضافة عميل -->
+    <div id="customerModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">إضافة عميل جديد</h2>
+                <button class="close-btn" onclick="closeModal('customerModal')">&times;</button>
+            </div>
+            <form onsubmit="saveCustomer(event)">
+                <div class="form-group">
+                    <label>الاسم الكامل *</label>
+                    <input type="text" id="customerName" required>
+                </div>
+                <div class="form-group">
+                    <label>رقم الهاتف (واتساب) *</label>
+                    <input type="tel" id="customerPhone" required placeholder="+962XXXXXXXXX">
+                </div>
+                <div class="form-group">
+                    <label>البريد الإلكتروني</label>
+                    <input type="email" id="customerEmail">
+                </div>
+                <div class="form-group">
+                    <label>حالة العميل</label>
+                    <select id="customerStatus">
+                        <option value="active">نشط</option>
+                        <option value="inactive">غير نشط</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>ملاحظات</label>
+                    <textarea id="customerNotes" rows="3"></textarea>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button type="submit" class="btn btn-primary">💾 حفظ</button>
+                    <button type="button" class="btn btn-danger" onclick="closeModal('customerModal')">❌ إلغاء</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- نافذة إضافة بيع -->
+    <div id="saleModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>إضافة عملية بيع</h2>
+                <button class="close-btn" onclick="closeModal('saleModal')">&times;</button>
+            </div>
+            <form onsubmit="saveSale(event)">
+                <input type="hidden" id="saleCustomerId">
+                <div class="form-group">
+                    <label>المبلغ (دينار) *</label>
+                    <input type="number" id="saleAmount" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label>التاريخ *</label>
+                    <input type="date" id="saleDate" required>
+                </div>
+                <div class="form-group">
+                    <label>الوصف</label>
+                    <textarea id="saleDescription" rows="3"></textarea>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button type="submit" class="btn btn-success">💰 حفظ</button>
+                    <button type="button" class="btn btn-danger" onclick="closeModal('saleModal')">❌ إلغاء</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
