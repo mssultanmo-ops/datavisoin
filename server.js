@@ -21,7 +21,7 @@ const PORT = process.env.PORT || 10000;
 
 // 🔗 رابط الداتابيس - ضع رابطك من Neon هنا
 const pool = new Pool({
-    connectionString: process.env.DATABASE_URL || 'postgresql://username:password@ep-example.neon.tech/databasename?sslmode=require',
+    connectionString: process.env.DATABASE_URL || 'psql 'postgresql://neondb_owner:npg_d6upvPVo4wAQ@ep-raspy-lab-agajrhmu-pooler.c-2.eu-central-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require'',
     ssl: { rejectUnauthorized: false }
 });
 
